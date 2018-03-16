@@ -1,5 +1,6 @@
 from rest_framework.schemas import SchemaGenerator
 from urllib.parse import urljoin
+from .link import CustomLink
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.renderers import CoreJSONRenderer
@@ -29,6 +30,7 @@ class CustomSchemaGenerator(SchemaGenerator):
         else:
             _method_desc = view.__doc__ if view and view.__doc__ else ''
             fields += self.get_serializer_fields(path, method, view)
+            responses = self._get_responses(yaml_doc)
 
         fields += self.get_pagination_fields(path, method, view)
         fields += self.get_filter_fields(path, method, view)
@@ -41,12 +43,13 @@ class CustomSchemaGenerator(SchemaGenerator):
         if self.url and path.startswith('/'):
             path = path[1:]
 
-        link = coreapi.Link(
+        link = CustomLink(
             url=urljoin(self.url, path),
             action=method.lower(),
             encoding=encoding,
             fields=fields,
             description=_method_desc,
+            responses_docs=responses if responses else None
         )
         return link
 
@@ -64,10 +67,14 @@ class CustomSchemaGenerator(SchemaGenerator):
                 location=_location,
                 required=_required,
                 description=_desc,
-                type=_type
+                type=_type,
             )
             fields.append(field)
         return fields
+
+    def _get_responses(self, yaml_doc):
+        responses = yaml_doc.get('responses')
+        return responses
 
 
 
