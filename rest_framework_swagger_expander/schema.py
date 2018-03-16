@@ -26,11 +26,11 @@ class CustomSchemaGenerator(SchemaGenerator):
         if yaml_doc and type(yaml_doc) != str:
             _method_desc = yaml_doc.get('description', '')
             fields += self._get_parameters(yaml_doc)
+            responses = self._get_responses(yaml_doc)
 
         else:
             _method_desc = view.__doc__ if view and view.__doc__ else ''
             fields += self.get_serializer_fields(path, method, view)
-            responses = self._get_responses(yaml_doc)
 
         fields += self.get_pagination_fields(path, method, view)
         fields += self.get_filter_fields(path, method, view)
